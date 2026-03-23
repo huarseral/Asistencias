@@ -233,7 +233,7 @@
 
 
             // Agregar QR un poco más pequeño a la derecha dentro del carnet
-            const qrSizeMm = 20; // tamaño algo menor
+            const qrSizeMm = 24; // tamaño algo menor
             const qrX = cardX + cardWidth - marginInner - qrSizeMm;
             const qrY = cardY + (cardHeight - qrSizeMm) / 2;
 
@@ -251,7 +251,7 @@
                 const logoHeight = 22; // mm aprox
                 const logoX = cardX + marginInner;
                 const logoY = cardY + cardHeight - logoHeight - 4;
-                doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY, logoWidth, logoHeight);
+                doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY+4, logoWidth, logoHeight);
               } catch (e) {
                 // si falla al agregar el logo, continuamos sin interrumpir la generación del PDF
               }
