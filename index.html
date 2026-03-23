@@ -178,7 +178,7 @@
             const nombreCompleto = `${nombres} ${apellidos}`.trim() || codigo;
 
             // Tamaño del carnet 8.6cm x 5.4cm -> 86mm x 54mm
-            const cardWidth = 100;
+            const cardWidth = 95;
             const cardHeight = 60;
 
             // Posicionamos la tarjeta en la página
@@ -191,7 +191,7 @@
             doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3);
 
             // Texto dentro del carnet
-            const marginInner = 4;
+            const marginInner = 3;
             const textX = cardX + marginInner;
             let textY = cardY + 15;
 
@@ -202,7 +202,7 @@
               // ignorar si no está disponible
             }
             
-            doc.setFontSize(18);
+            doc.setFontSize(20);
             doc.setTextColor(121,85,72);
 
             doc.text("ESTUDIANTE:", textX, textY);
@@ -211,14 +211,14 @@
             doc.setTextColor(211, 135, 48); // rgb de #1e3a8a
             
             // Nombres (arriba, grande, negrita)
-            doc.setFontSize(12);
-            textY += 8;
+            doc.setFontSize(13);
+            textY += 9;
             doc.text(apellidos || '-', textX, textY);
-            doc.setFontSize(10);
+            doc.setFontSize(11);
             // Apellidos (debajo, grande, negrita)
-            textY += 5;
+            textY += 6;
             doc.text(nombres || '-', textX, textY);
-            textY += 5;
+            textY += 6;
             doc.text("Grado - Sección: "+aula || '-', textX, textY);
             
             //By Developer
@@ -233,7 +233,7 @@
 
 
             // Agregar QR un poco más pequeño a la derecha dentro del carnet
-            const qrSizeMm = 18; // tamaño algo menor
+            const qrSizeMm = 20; // tamaño algo menor
             const qrX = cardX + cardWidth - marginInner - qrSizeMm;
             const qrY = cardY + (cardHeight - qrSizeMm) / 2;
 
@@ -247,8 +247,8 @@
             // Logo en esquina inferior izquierda del carnet (si se cargó)
             if (logoDataUrl) {
               try {
-                const logoWidth = 17; // mm
-                const logoHeight = 15; // mm aprox
+                const logoWidth = 20; // mm
+                const logoHeight = 17; // mm aprox
                 const logoX = cardX + marginInner;
                 const logoY = cardY + cardHeight - logoHeight - 4;
                 doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY+4, logoWidth, logoHeight);
