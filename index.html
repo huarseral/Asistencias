@@ -247,11 +247,11 @@
             // Logo en esquina inferior izquierda del carnet (si se cargó)
             if (logoDataUrl) {
               try {
-                const logoWidth = 20; // mm
-                const logoHeight = 17; // mm aprox
+                const logoWidth = 25; // mm
+                const logoHeight = 22; // mm aprox
                 const logoX = cardX + marginInner;
                 const logoY = cardY + cardHeight - logoHeight - 4;
-                doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY+4, logoWidth, logoHeight);
+                doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY, logoWidth, logoHeight);
               } catch (e) {
                 // si falla al agregar el logo, continuamos sin interrumpir la generación del PDF
               }
