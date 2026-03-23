@@ -178,8 +178,8 @@
             const nombreCompleto = `${nombres} ${apellidos}`.trim() || codigo;
 
             // Tamaño del carnet 8.6cm x 5.4cm -> 86mm x 54mm
-            const cardWidth = 86;
-            const cardHeight = 54;
+            const cardWidth = 100;
+            const cardHeight = 60;
 
             // Posicionamos la tarjeta en la página
             const cardX = 20;
@@ -202,7 +202,7 @@
               // ignorar si no está disponible
             }
             
-            doc.setFontSize(16);
+            doc.setFontSize(18);
             doc.setTextColor(121,85,72);
 
             doc.text("ESTUDIANTE:", textX, textY);
