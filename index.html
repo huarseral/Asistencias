@@ -226,8 +226,8 @@
             doc.setFontSize(5);
             doc.setFont("helvetica", "bolditalic");  // negrita + cursiva
             doc.setTextColor(121,85,72); // rgb de #1e3a8a
-            doc.text("By Huarseral Dev", 10, 80);
-            doc.text("LAChirana Plat", 102, 83);
+            doc.text("By Huarseral Dev", 95, 85);
+            doc.text("LAChirana Plat", 97, 88);
 
             // Código más pequeño debajo (también negrita)
 
@@ -240,7 +240,7 @@
             // Borde alrededor del QR armonizado en color
             doc.setDrawColor(121,85,72);
             doc.setLineWidth(0.4);
-            doc.roundedRect(qrX - 4, qrY - 2, qrSizeMm, qrSizeMm, 2, 2);
+            doc.roundedRect(qrX , qrY , qrSizeMm, qrSizeMm, 2, 2);
 
             doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSizeMm, qrSizeMm);
 
