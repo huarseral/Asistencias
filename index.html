@@ -106,194 +106,211 @@
       });
     }
 
-    function procesarExcel() {
-      const inputFile = document.getElementById('excel');
-      const mensajeExcel = document.getElementById('mensaje-excel');
-      const lista = document.getElementById('lista-personas');
-      const resumen = document.getElementById('resumen-lista');
-
-      mensajeExcel.textContent = '';
-      lista.innerHTML = '';
-      resumen.textContent = '';
-
-      if (!inputFile.files || inputFile.files.length === 0) {
-        mensajeExcel.textContent = 'Selecciona un archivo Excel primero.';
+  /***/
+  
+function procesarExcel() {
+  const inputFile     = document.getElementById('excel');
+  const mensajeExcel  = document.getElementById('mensaje-excel');
+  const lista         = document.getElementById('lista-personas');
+  const resumen       = document.getElementById('resumen-lista');
+ 
+  mensajeExcel.textContent = '';
+  lista.innerHTML = '';
+  resumen.textContent = '';
+ 
+  if (!inputFile.files || inputFile.files.length === 0) {
+    mensajeExcel.textContent = 'Selecciona un archivo Excel primero.';
+    mensajeExcel.classList.add('error');
+    return;
+  }
+ 
+  const file   = inputFile.files[0];
+  const reader = new FileReader();
+ 
+  reader.onload = function (e) {
+    try {
+      const data          = new Uint8Array(e.target.result);
+      const workbook      = XLSX.read(data, { type: 'array' });
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet         = workbook.Sheets[firstSheetName];
+      const rows          = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+ 
+      if (!rows.length) {
+        mensajeExcel.textContent = 'El Excel está vacío.';
         mensajeExcel.classList.add('error');
         return;
       }
-
-      const file = inputFile.files[0];
-      const reader = new FileReader();
-
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const firstSheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[firstSheetName];
-          const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-
-          if (!rows.length) {
-            mensajeExcel.textContent = 'El Excel está vacío.';
-            mensajeExcel.classList.add('error');
-            return;
-          }
-
-          let countValidos = 0;
-
-          rows.forEach((row, index) => {
-            const codigo = String(row.codigo || row.CODIGO || '').trim();
-            const nombres = String(row.nombres || row.NOMBRES || '').trim();
-            const apellidos = String(row.apellidos || row.APELLIDOS || '').trim();
-            const aula = String(row.aula || row.AULA || '').trim();
-
-            if (!codigo) {
-              return; // saltar filas sin código
-            }
-
-            // Crear QR en un contenedor temporal para obtener la imagen
-            const tmp = document.createElement('div');
-            new QRCode(tmp, {
-              text: codigo,
-              width: 80,
-              height: 80,
-              colorDark: '#5e3530',  // azul oscuro
-              colorLight: '#ffffff'  // fondo blanco
-            });
-
-            const canvas = tmp.querySelector('canvas') || tmp.querySelector('img');
-            if (!canvas) {
-              return;
-            }
-
-            const qrDataUrl =
-              canvas.tagName.toLowerCase() === 'canvas'
-                ? canvas.toDataURL('image/png')
-                : canvas.src;
-
-            // Crear PDF del carnet con tamaño de tarjeta dentro de A4
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-            const nombreCompleto = `${nombres} ${apellidos}`.trim() || codigo;
-
-            // Tamaño del carnet 8.6cm x 5.4cm -> 86mm x 54mm
-            const cardWidth = 95;
-            const cardHeight = 60;
-
-            // Posicionamos la tarjeta en la página
-            const cardX = 20;
-            const cardY = 40;
-
-            // Borde con esquinas redondeadas
-            doc.setDrawColor(121,85,72);
-            doc.setLineWidth(0.5);
-            doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3);
-
-            // Texto dentro del carnet
-            const marginInner = 3;
-            const textX = cardX + marginInner;
-            let textY = cardY + 15;
-
-            // Intentar poner fuente en negrita (si el visor lo soporta)
-            try {
-              doc.setFont(undefined, 'bold');
-            } catch (e) {
-              // ignorar si no está disponible
-            }
-            
-            doc.setFontSize(20);
-            doc.setTextColor(121,85,72);
-
-            doc.text("ESTUDIANTE:", textX, textY);
-
-            // Color de texto armonizado con el QR (azul oscuro)
-            doc.setTextColor(211, 135, 48); // rgb de #1e3a8a
-            
-            // Nombres (arriba, grande, negrita)
-            doc.setFontSize(13);
-            textY += 9;
-            doc.text(apellidos || '-', textX, textY);
-            doc.setFontSize(11);
-            // Apellidos (debajo, grande, negrita)
-            textY += 6;
-            doc.text(nombres || '-', textX, textY);
-            textY += 6;
-            doc.text("Grado - Sección: "+aula || '-', textX, textY);
-            
-            //By Developer
-            
-            doc.setFontSize(5);
-            doc.setFont("helvetica", "bolditalic");  // negrita + cursiva
-            doc.setTextColor(121,85,72); // rgb de #1e3a8a
-            doc.text("By Huarseral Dev", 98, 95);
-            doc.text("LAChirana Plat", 100, 98);
-
-            // Código más pequeño debajo (también negrita)
-
-
-            // Agregar QR un poco más pequeño a la derecha dentro del carnet
-            const qrSizeMm = 25; // tamaño algo menor
-            const qrX = cardX + cardWidth - marginInner - qrSizeMm;
-            const qrY = cardY + (cardHeight - qrSizeMm) / 2;
-
-            // Borde alrededor del QR armonizado en color
-            doc.setDrawColor(121,85,72);
-            doc.setLineWidth(0.4);
-            doc.roundedRect(qrX-3 , qrY-3 , qrSizeMm + 4, qrSizeMm + 4, 2, 2);
-
-            //Qr
-            doc.addImage(qrDataUrl, 'PNG', qrX-1, qrY-1, qrSizeMm, qrSizeMm);
-
-            // Logo en esquina inferior izquierda del carnet (si se cargó)
-            if (logoDataUrl) {
-              try {
-                const logoWidth = 25; // mm
-                const logoHeight = 22; // mm aprox
-                const logoX = cardX + marginInner;
-                const logoY = cardY + cardHeight - logoHeight - 4;
-                doc.addImage(logoDataUrl, 'PNG', logoX-2, logoY+4, logoWidth, logoHeight);
-              } catch (e) {
-                // si falla al agregar el logo, continuamos sin interrumpir la generación del PDF
-              }
-            }
-
-            const blob = doc.output('blob');
-            const url = URL.createObjectURL(blob);
-
-            // Crear enlace de descarga
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `carnet_${codigo}.pdf`;
-            link.textContent = `${nombreCompleto} - Descargar carnet PDF`;
-            link.className = 'pdf-link';
-
-            const wrapper = document.createElement('div');
-            wrapper.className = 'pdf-link-item';
-            wrapper.appendChild(link);
-
-            lista.appendChild(wrapper);
-
-            countValidos++;
-          });
-
-          if (countValidos === 0) {
-            mensajeExcel.textContent = 'No se encontraron filas con código en el Excel.';
-            mensajeExcel.classList.add('error');
-          } else {
-            mensajeExcel.textContent = '';
-            mensajeExcel.classList.remove('error');
-            resumen.textContent = `Se generaron ${countValidos} QR(s) desde el Excel.`;
-          }
-        } catch (err) {
-          console.error(err);
-          mensajeExcel.textContent = 'Error al leer el archivo Excel. Verifica el formato.';
-          mensajeExcel.classList.add('error');
+ 
+      // ── Dimensiones de la página A4 (mm) ──────────────────
+      const pageW = 210;
+      const pageH = 297;
+ 
+      // ── Márgenes de página (mm) ───────────────────────────
+      const marginLeft   = 5;
+      const marginTop    = 5;
+      const marginRight  = 5;
+      const marginBottom = 5;
+ 
+      // ── Tamaño de cada carnet (mm) ────────────────────────
+      const cardWidth  = 95;
+      const cardHeight = 60;
+ 
+      // ── Separación entre carnets (mm) ─────────────────────
+      const gapX = 3;
+      const gapY = 3;
+ 
+      // ── Cuántos carnets caben por fila y columna ──────────
+      const usableW = pageW - marginLeft - marginRight;
+      const usableH = pageH - marginTop  - marginBottom;
+ 
+      const cols = Math.floor((usableW + gapX) / (cardWidth  + gapX));  // ej. 2
+      const rows_per_page = Math.floor((usableH + gapY) / (cardHeight + gapY));  // ej. 4
+ 
+      // ── Inicializar jsPDF ─────────────────────────────────
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+ 
+      let countValidos = 0;
+      let cardIndex    = 0;   // contador global de carnets colocados
+ 
+      rows.forEach((row) => {
+        const codigo   = String(row.codigo   || row.CODIGO   || '').trim();
+        const nombres  = String(row.nombres  || row.NOMBRES  || '').trim();
+        const apellidos = String(row.apellidos || row.APELLIDOS || '').trim();
+        const aula     = String(row.aula     || row.AULA     || '').trim();
+ 
+        if (!codigo) return; // saltar filas sin código
+ 
+        // ── Generar imagen QR ────────────────────────────────
+        const tmp = document.createElement('div');
+        new QRCode(tmp, {
+          text: codigo,
+          width: 80,
+          height: 80,
+          colorDark:  '#5e3530',
+          colorLight: '#ffffff'
+        });
+ 
+        const canvas = tmp.querySelector('canvas') || tmp.querySelector('img');
+        if (!canvas) return;
+ 
+        const qrDataUrl =
+          canvas.tagName.toLowerCase() === 'canvas'
+            ? canvas.toDataURL('image/png')
+            : canvas.src;
+ 
+        // ── Calcular posición en la página ───────────────────
+        const totalPerPage = cols * rows_per_page;
+        const posInPage    = cardIndex % totalPerPage;
+ 
+        // Si es el primer carnet de una nueva página (y no la primera)
+        if (posInPage === 0 && cardIndex > 0) {
+          doc.addPage();
         }
-      };
-
-      reader.readAsArrayBuffer(file);
+ 
+        const col = posInPage % cols;
+        const rowInPage = Math.floor(posInPage / cols);
+ 
+        const cardX = marginLeft + col * (cardWidth  + gapX);
+        const cardY = marginTop  + rowInPage * (cardHeight + gapY);
+ 
+        // ── Dibujar carnet ────────────────────────────────────
+        const marginInner = 3;
+ 
+        // Borde redondeado
+        doc.setDrawColor(121, 85, 72);
+        doc.setLineWidth(0.5);
+        doc.roundedRect(cardX, cardY, cardWidth, cardHeight, 3, 3);
+ 
+        // Encabezado "ESTUDIANTE:"
+        let textY = cardY + 15;
+        try { doc.setFont(undefined, 'bold'); } catch (e) { /* ignore */ }
+        doc.setFontSize(20);
+        doc.setTextColor(121, 85, 72);
+        doc.text('ESTUDIANTE:', cardX + marginInner, textY);
+ 
+        // Apellidos
+        doc.setTextColor(211, 135, 48);
+        doc.setFontSize(13);
+        textY += 9;
+        doc.text(apellidos || '-', cardX + marginInner, textY);
+ 
+        // Nombres
+        doc.setFontSize(11);
+        textY += 6;
+        doc.text(nombres || '-', cardX + marginInner, textY);
+ 
+        // Aula
+        textY += 6;
+        doc.text('Grado - Sección: ' + (aula || '-'), cardX + marginInner, textY);
+ 
+        // Firma de desarrollador (relativa a la esquina inferior del carnet)
+        doc.setFontSize(5);
+        doc.setFont('helvetica', 'bolditalic');
+        doc.setTextColor(121, 85, 72);
+        doc.text('By Huarseral Dev', cardX + cardWidth - 16, cardY + cardHeight - 4);
+        doc.text('LAChirana Plat',   cardX + cardWidth - 14, cardY + cardHeight - 2);
+ 
+        // QR dentro del carnet
+        const qrSizeMm = 20;
+        const qrX = cardX + cardWidth  - marginInner - qrSizeMm;
+        const qrY = cardY + (cardHeight - qrSizeMm) / 2;
+ 
+        doc.setDrawColor(121, 85, 72);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(qrX - 2, qrY - 2, qrSizeMm + 4, qrSizeMm + 4, 2, 2);
+        doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSizeMm, qrSizeMm);
+ 
+        // Logo (si está disponible)
+        if (logoDataUrl) {
+          try {
+            const logoWidth  = 25;
+            const logoHeight = 22;
+            const logoX = cardX + marginInner - 2;
+            const logoY = cardY + cardHeight - logoHeight - 4;
+            doc.addImage(logoDataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+          } catch (err) { /* continuar sin logo */ }
+        }
+ 
+        cardIndex++;
+        countValidos++;
+      });
+ 
+      // ── Resultado final ───────────────────────────────────
+      if (countValidos === 0) {
+        mensajeExcel.textContent = 'No se encontraron filas con código en el Excel.';
+        mensajeExcel.classList.add('error');
+        return;
+      }
+ 
+      mensajeExcel.classList.remove('error');
+      resumen.textContent = `Se generaron ${countValidos} carnet(s) en ${doc.getNumberOfPages()} página(s).`;
+ 
+      // ── Crear enlace de descarga único ────────────────────
+      const blob = doc.output('blob');
+      const url  = URL.createObjectURL(blob);
+ 
+      const link = document.createElement('a');
+      link.href      = url;
+      link.download  = 'carnets_todos.pdf';
+      link.textContent = `Descargar todos los carnets (${countValidos}) — PDF`;
+      link.className = 'pdf-link';
+ 
+      const wrapper = document.createElement('div');
+      wrapper.className = 'pdf-link-item';
+      wrapper.appendChild(link);
+      lista.appendChild(wrapper);
+ 
+    } catch (err) {
+      console.error(err);
+      mensajeExcel.textContent = 'Error al leer el archivo Excel. Verifica el formato.';
+      mensajeExcel.classList.add('error');
     }
+  };
+ 
+  reader.readAsArrayBuffer(file);
+}
+  /***/
   </script>
 </body>
 </html>
