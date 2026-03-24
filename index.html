@@ -226,21 +226,21 @@
             doc.setFontSize(5);
             doc.setFont("helvetica", "bolditalic");  // negrita + cursiva
             doc.setTextColor(121,85,72); // rgb de #1e3a8a
-            doc.text("By Huarseral Dev", 89, 90);
-            doc.text("LAChirana Plat", 91, 92.5);
+            doc.text("By Huarseral Dev", 10, 80);
+            doc.text("LAChirana Plat", 102, 83);
 
             // Código más pequeño debajo (también negrita)
 
 
             // Agregar QR un poco más pequeño a la derecha dentro del carnet
-            const qrSizeMm = 24; // tamaño algo menor
+            const qrSizeMm = 25; // tamaño algo menor
             const qrX = cardX + cardWidth - marginInner - qrSizeMm;
             const qrY = cardY + (cardHeight - qrSizeMm) / 2;
 
             // Borde alrededor del QR armonizado en color
             doc.setDrawColor(121,85,72);
             doc.setLineWidth(0.4);
-            doc.roundedRect(qrX - 2, qrY - 2, qrSizeMm + 4, qrSizeMm + 4, 2, 2);
+            doc.roundedRect(qrX - 4, qrY - 2, qrSizeMm, qrSizeMm, 2, 2);
 
             doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSizeMm, qrSizeMm);
 
